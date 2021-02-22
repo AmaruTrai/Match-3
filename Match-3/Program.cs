@@ -16,7 +16,7 @@ namespace Match_3
         public static string GameName = "Match-3";
         public static string CurrentFolder = AppDomain.CurrentDomain.BaseDirectory;
         public static float TimeStep = 4f;
-        public static float GameDuration = 10f;
+        public static float GameDuration = 60f;
 
 
         static void Main(string[] args)
