@@ -18,7 +18,8 @@
 <p> To start the game, you need:
     <ul>
     <li> Make sure that the SFML.net 2.5.0  library is connected to the project (available in NuGet).</li>
-    <li> Copy  folder "File" to the build folder.</li>
+    <li> Make sure that the Microsoft.Extensions.Configuration is connected to the project (available in NuGet).</li>
+    <li> Make sure that the Microsoft.Extensions.Configuration.Xml is connected to the project (available in NuGet).</li>
     <li> Make sure the compiler supports .NET 5.0.</li>
     <li> Build solution. </li>
   </ul>
