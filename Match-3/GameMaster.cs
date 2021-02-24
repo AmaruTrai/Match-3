@@ -3,6 +3,7 @@ using SFML.Graphics;
 using System.IO;
 using SFML.System;
 
+
 namespace Match_3
 {
 
@@ -22,11 +23,6 @@ namespace Match_3
         private List<Tile> bombBonusList;
         private List<Tile> lineVerticalBonusList;
         private List<Tile> lineHorizontalBonusList;
-        private Texture _mainTexture;
-        private Texture _frameTexture;
-        private Texture _lineTexture;
-        private Texture _lineVTexture;
-        private Texture _bombTexture;
         private Sprite _frame;
         private double _score;
 
@@ -45,18 +41,7 @@ namespace Match_3
             _LastMovedMap = new Tile[Game.MapSize, Game.MapSize];
             _gameMap = new Tile[Game.MapSize, Game.MapSize];
 
-            string _pathToImage = Path.Combine(Game.CurrentFolder, @"Files/Icons.png");
-            string _pathToLine = Path.Combine(Game.CurrentFolder, @"Files/Line.png");
-            string _pathToLineV = Path.Combine(Game.CurrentFolder, @"Files/LineV.png");
-            string _pathToFrame = Path.Combine(Game.CurrentFolder, @"Files/Frame.png");
-            string _pathToBomb = Path.Combine(Game.CurrentFolder, @"Files/Bomb.png");
-
-            _bombTexture= new Texture(_pathToBomb);
-            _lineTexture = new Texture(_pathToLine);
-            _lineVTexture = new Texture(_pathToLineV);
-            _mainTexture = new Texture(_pathToImage);
-            _frameTexture = new Texture(_pathToFrame);
-            _frame = new Sprite(_frameTexture);
+            _frame = new Sprite(Game.Frame);
             _frame.Scale = new Vector2f((float)Game.TileWidth / _frame.Texture.Size.X, (float)Game.TileHeight / _frame.Texture.Size.Y);
             _score = 0;
 
@@ -89,7 +74,7 @@ namespace Match_3
                 for (int j = 0; j < Game.MapSize; ++j)
                 {
                     var position = new Vector2f(i * Game.TileWidth, j * Game.TileHeight);
-                    _gameMap[i, j] = Tile.CreateRandomTile(_mainTexture, position, i, j);
+                    _gameMap[i, j] = Tile.CreateRandomTile(Game.Icon, position, i, j);
                 }
             }
         }
@@ -104,7 +89,7 @@ namespace Match_3
                 {
                     var positionStart = new Vector2f(j * Game.TileWidth, -1 * Game.TileHeight);
                     var positionEnd = new Vector2f(j * Game.TileWidth, 0 * Game.TileHeight);
-                    _gameMap[j, 0] = Tile.CreateRandomTile(_mainTexture, positionStart, j, 0);
+                    _gameMap[j, 0] = Tile.CreateRandomTile(Game.Icon, positionStart, j, 0);
                     _painter.AddAnimation(new MoveAnimation(_gameMap[j, 0], positionEnd));
                     reply = true;
                 }
@@ -320,17 +305,17 @@ namespace Match_3
             {
                 foreach(Tile tile in lineVerticalBonusList)
                 {
-                    _gameMap[tile.Line, tile.Column] = new BonusTile(_lineVTexture, tile, new LineVerticalBonus(tile, this));
+                    _gameMap[tile.Line, tile.Column] = new BonusTile(Game.LineV, tile, new LineVerticalBonus(tile, this));
                     _gameMap[tile.Line, tile.Column].Position = tile.Position;
                 }
                 foreach (Tile tile in lineHorizontalBonusList)
                 {
-                    _gameMap[tile.Line, tile.Column] = new BonusTile(_lineTexture, tile, new LineHorizontalBonus(tile, this));
+                    _gameMap[tile.Line, tile.Column] = new BonusTile(Game.Line, tile, new LineHorizontalBonus(tile, this));
                     _gameMap[tile.Line, tile.Column].Position = tile.Position;
                 }
                 foreach (Tile tile in bombBonusList)
                 {
-                    _gameMap[tile.Line, tile.Column] = new BonusTile(_bombTexture, tile, new BombBonus(tile, this));
+                    _gameMap[tile.Line, tile.Column] = new BonusTile(Game.Bomb, tile, new BombBonus(tile, this));
                     _gameMap[tile.Line, tile.Column].Position = tile.Position;
                 }
             }

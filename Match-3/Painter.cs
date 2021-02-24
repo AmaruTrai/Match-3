@@ -31,7 +31,6 @@ namespace Match_3
         private bool AnimationStart;
         private GameState _state;
         private Clock _clock;
-        private Font _font;
         private bool GameRun;
         private Vector2f _scoredPosition;
 
@@ -39,59 +38,50 @@ namespace Match_3
         public Painter()
         {
             // Auxiliary objects.
-            string _pathToFrame = Path.Combine(Game.CurrentFolder, @"Files/Background.png");
-            string _pathToButton = Path.Combine(Game.CurrentFolder, @"Files/Button.png");
-            string _pathToInfo = Path.Combine(Game.CurrentFolder, @"Files/InfoPanel.png");
-            string _pathToInFont = Path.Combine(Game.CurrentFolder, @"Files/Fonts.otf");
-            string _pathToInTable = Path.Combine(Game.CurrentFolder, @"Files/Table.png");
             _state = GameState.MainWindow;
             _clock = new Clock();
             _animationsList = new List<Animation>();
             AnimationStart = false;
-            _font = new Font(_pathToInFont);
+
             GameRun = false;
 
             // Graphic objects.
             _window = new RenderWindow(new VideoMode(Game.WindowWidth, Game.WindowHeight), Game.GameName);
             _rTexture = new RenderTexture(Game.WindowWidth, Game.WindowHeight);
-             var _backgroundTexture = new Texture(_pathToFrame);
-             var _buttonTexture = new Texture(_pathToButton);
-             var _infoTexture = new Texture(_pathToInfo);
-             var _tableTexture = new Texture(_pathToInTable);
-            _infoSprite = new Sprite(_infoTexture);
-            _buttonSprite = new Sprite(_buttonTexture);
+            _infoSprite = new Sprite(Game.InfoPanel);
+            _buttonSprite = new Sprite(Game.Button);
             _renderSprite = new Sprite(_rTexture.Texture);
-            _fontSprite = new Sprite(_backgroundTexture);
-            _tableSprite = new Sprite(_tableTexture);
+            _fontSprite = new Sprite(Game.Background);
+            _tableSprite = new Sprite(Game.Table);
 
-            var xSize = (float)(Game.WindowWidth-Game.GameFieldWidth) / _infoTexture.Size.X;
-            var ySize = (float)Game.GameFieldHeight / _infoTexture.Size.Y;
+            var xSize = (float)(Game.WindowWidth-Game.GameFieldWidth) / Game.InfoPanel.Size.X;
+            var ySize = (float)Game.GameFieldHeight / Game.InfoPanel.Size.Y;
             _infoSprite.Position = new Vector2f((float)Game.GameFieldWidth,0);
             _infoSprite.Scale = new Vector2f(xSize, ySize);
 
-            xSize = (float)Game.GameFieldWidth / _backgroundTexture.Size.X;
-            ySize = (float)Game.GameFieldHeight / _backgroundTexture.Size.Y;
+            xSize = (float)Game.GameFieldWidth / Game.Background.Size.X;
+            ySize = (float)Game.GameFieldHeight / Game.Background.Size.Y;
             _fontSprite.Scale = new Vector2f(xSize, ySize);
 
             var wRatio = 0.3f;
             var hRatio = 0.28f;
-            xSize = (float)Game.GameFieldWidth / _buttonTexture.Size.X * wRatio;
-            ySize = (float)Game.GameFieldHeight / _buttonTexture.Size.Y * hRatio;
+            xSize = (float)Game.GameFieldWidth / Game.Button.Size.X * wRatio;
+            ySize = (float)Game.GameFieldHeight / Game.Button.Size.Y * hRatio;
             _buttonSprite.Scale = new Vector2f(xSize, ySize);
 
-            xSize = (float)Game.GameFieldWidth / 2 - _buttonTexture.Size.X * _buttonSprite.Scale.X / 2f;
-            ySize = (float)Game.GameFieldHeight / 2 - _buttonTexture.Size.Y * _buttonSprite.Scale.Y / 2f;
+            xSize = (float)Game.GameFieldWidth / 2 - Game.Button.Size.X * _buttonSprite.Scale.X / 2f;
+            ySize = (float)Game.GameFieldHeight / 2 - Game.Button.Size.Y * _buttonSprite.Scale.Y / 2f;
             _buttonSprite.Position = new Vector2f(xSize, ySize);
-            _rectButton = new FloatRect(_buttonSprite.Position.X, _buttonSprite.Position.Y, _buttonTexture.Size.X * _buttonSprite.Scale.X, _buttonTexture.Size.Y * _buttonSprite.Scale.Y);
+            _rectButton = new FloatRect(_buttonSprite.Position.X, _buttonSprite.Position.Y, Game.Button.Size.X * _buttonSprite.Scale.X, Game.Button.Size.Y * _buttonSprite.Scale.Y);
 
             wRatio = 0.4f;
             hRatio = 0.4f;
-            xSize = (float)Game.GameFieldWidth / _tableTexture.Size.X * wRatio;
-            ySize = (float)Game.GameFieldHeight / _tableTexture.Size.Y * hRatio;
+            xSize = (float)Game.GameFieldWidth / Game.Table.Size.X * wRatio;
+            ySize = (float)Game.GameFieldHeight / Game.Table.Size.Y * hRatio;
             _tableSprite.Scale = new Vector2f(xSize, ySize);
 
-            xSize = (float)Game.GameFieldWidth / 2 - _tableTexture.Size.X * _tableSprite.Scale.X / 2f;
-            ySize = (float)Game.GameFieldHeight / 2 - _tableTexture.Size.Y * _tableSprite.Scale.Y / 2f;
+            xSize = (float)Game.GameFieldWidth / 2 - Game.Table.Size.X * _tableSprite.Scale.X / 2f;
+            ySize = (float)Game.GameFieldHeight / 2 - Game.Table.Size.Y * _tableSprite.Scale.Y / 2f;
             _tableSprite.Position = new Vector2f(xSize, ySize);
 
             var x = _tableSprite.Position.X + _tableSprite.Texture.Size.X * _tableSprite.Scale.X / 8f;
@@ -135,7 +125,7 @@ namespace Match_3
                 {
                     scoreString = "Score: 0";
                 }
-                var scoreText = new Text(scoreString, _font, 36);
+                var scoreText = new Text(scoreString, Game.Fonts, 36);
                 scoreText.Position = _scoredPosition;
 
                 switch (_state)
@@ -152,7 +142,7 @@ namespace Match_3
                     case GameState.GameRun:
 
                         string timeText = "Time left: " + time.ToString();
-                        var text = new Text(timeText, _font, 36);
+                        var text = new Text(timeText, Game.Fonts, 36);
                         text.Position = new Vector2f(Game.GameFieldWidth + 25, 15);
                         scoreText.Position = new Vector2f(Game.GameFieldWidth + 25, 15+50);
 
