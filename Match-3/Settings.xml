@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <WindowWidth> 742 </WindowWidth>
+  <WindowHeight> 512 </WindowHeight>
+  <GameFieldWidth> 512 </GameFieldWidth>
+  <GameFieldHeight> 512 </GameFieldHeight>
+  <GameName> Match-3 </GameName>
+  <TimeStep> 4 </TimeStep>
+  <MapSize> 8 </MapSize>
+  <GameDuration> 60 </GameDuration>
+</configuration>
