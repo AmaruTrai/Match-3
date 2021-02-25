@@ -58,6 +58,7 @@ namespace Match_3
             lineVerticalBonusList.Clear();
             lineHorizontalBonusList.Clear();
             GenerateMap();
+            while (UpdateMap(false)) { }
             _score = 0;
         }
 
@@ -80,7 +81,7 @@ namespace Match_3
         }
 
         // The method generates new elements on the top line, return true, if create any Tile.
-        private bool GenerateTopLine()
+        private bool GenerateTopLine(bool isDraw = true)
         {
             bool reply = false;
             for (int j = 0; j < Game.MapSize; ++j)
@@ -89,8 +90,15 @@ namespace Match_3
                 {
                     var positionStart = new Vector2f(j * Game.TileWidth, -1 * Game.TileHeight);
                     var positionEnd = new Vector2f(j * Game.TileWidth, 0 * Game.TileHeight);
-                    _gameMap[j, 0] = Tile.CreateRandomTile(Game.Icon, positionStart, j, 0);
-                    _painter.AddAnimation(new MoveAnimation(_gameMap[j, 0], positionEnd));
+                    if (isDraw)
+                    {
+                        _gameMap[j, 0] = Tile.CreateRandomTile(Game.Icon, positionStart, j, 0);
+                        _painter.AddAnimation(new MoveAnimation(_gameMap[j, 0], positionEnd));
+                    }
+                    else
+                    {
+                        _gameMap[j, 0] = Tile.CreateRandomTile(Game.Icon, positionEnd, j, 0);
+                    }
                     reply = true;
                 }
              }
@@ -187,29 +195,29 @@ namespace Match_3
         }
 
         // The main method in which the state of the playing field is updated
-        public bool UpdateMap()
+        public bool UpdateMap(bool isDraw = true)
         {
             bool reply = true;
-            if (!BonusRun())
+            if (!BonusRun(isDraw))
             {
-                if (!Falling())
+                if (!Falling(isDraw))
                 {
-                    if (!FindAndDestroy())
+                    if (!FindAndDestroy(isDraw))
                     {
-                        GenerateTopLine();
+                        GenerateTopLine(isDraw);
                         reply = false;
                     }
                 }
                 else
                 {
-                    GenerateTopLine();
+                    GenerateTopLine(isDraw);
                 }
             }
             return reply;
         }
 
         // Method describing falling tiles on the map, return true, if any Tile fall down.
-        private bool Falling()
+        private bool Falling(bool isDraw = true)
         {
             bool reply = false;
             for (int i = 0; i < Game.MapSize; ++i)
@@ -220,10 +228,16 @@ namespace Match_3
                     {
                         reply = true;
                         _LastMovedMap[i, j + 1] = (Tile)_gameMap[i, j].Clone();
+                        if (isDraw)
+                        {
+                            _painter.AddAnimation(new MoveAnimation(_gameMap[i, j]));
+                        }
+                        else
+                        {
+                            _gameMap[i, j].Position = new Vector2f(_gameMap[i, j].Position.X, _gameMap[i, j].Position.Y + Game.TileHeight);
+                        }
+                        _gameMap[i, j].Column = j + 1;
                         _gameMap[i, j + 1] = _gameMap[i, j];
-                        _painter.AddAnimation(new MoveAnimation(_gameMap[i, j + 1]));
-                        _gameMap[i, j + 1].Line = i;
-                        _gameMap[i, j + 1].Column = j + 1;
                         _gameMap[i, j] = null;
                     }
                 }
@@ -232,7 +246,7 @@ namespace Match_3
         }
 
         // The method finds matches and removes them, return true, if remove any match.
-        public bool FindAndDestroy()
+        public bool FindAndDestroy(bool isDraw = true)
         {
             bool reply = false;
             for (int i = 0; i < Game.MapSize; ++i)
@@ -243,12 +257,12 @@ namespace Match_3
                     {
                         NewCheck(_gameMap[i, j]);
                         FindBonus();
-                        if (DeleteTile(listLine))
+                        if (DeleteTile(listLine, isDraw))
                         {
                             reply = true;
                         }
 
-                        if(DeleteTile(listColumn))
+                        if(DeleteTile(listColumn, isDraw))
                         {
                             reply = true;
                         }
@@ -269,7 +283,7 @@ namespace Match_3
 
 
         // Method describing the behavior of activated bonuses.
-        private bool BonusRun()
+        private bool BonusRun(bool isDraw = true)
         {
             bool reply = true;
             if (bonusList.Count > 0)
@@ -278,7 +292,7 @@ namespace Match_3
                 var bonusListForDelete = new List<Bonus>();
                 foreach (Bonus bonus in bonusListCopy)
                 {
-                    if (!bonus.Run())
+                    if (!bonus.Run(isDraw))
                     {
                         bonusListForDelete.Add(bonus);
                     }
@@ -463,7 +477,7 @@ namespace Match_3
         }
 
         // Method removes the list of tiles from the map, calls animation for each
-        private bool DeleteTile(List<List<Tile>> listTile)
+        private bool DeleteTile(List<List<Tile>> listTile, bool isDraw = true)
         {
             bool reply = false;
             foreach (List<Tile> list in listTile)
@@ -480,7 +494,10 @@ namespace Match_3
                             {
                                 bonusList.Add(bonus.Bonus);
                             }
-                            _painter.AddAnimation(new DestroyAnimation(_gameMap[tile.Line, tile.Column]));
+                            if (isDraw)
+                            {
+                                _painter.AddAnimation(new DestroyAnimation(_gameMap[tile.Line, tile.Column]));
+                            }
                             _gameMap[tile.Line, tile.Column] = null;
                             reply = true;
                         }

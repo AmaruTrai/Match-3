@@ -4,8 +4,8 @@
   <WindowHeight> 512 </WindowHeight>
   <GameFieldWidth> 512 </GameFieldWidth>
   <GameFieldHeight> 512 </GameFieldHeight>
-  <GameName> Match-3 </GameName>
-  <TimeStep> 4 </TimeStep>
+  <StepInImage> 250 </StepInImage>
   <MapSize> 8 </MapSize>
+  <GameName> Match-3 </GameName>
   <GameDuration> 60 </GameDuration>
 </configuration>

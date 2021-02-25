@@ -23,12 +23,15 @@ namespace Match_3
         private bool _isDone = false;
         private Tile _tile;
         private Vector2f _targetPosition;
+        private Clock _clock;
 
         // Constructor without target position, fall down.
         public MoveAnimation(Tile targetTile)
         {
             _tile = targetTile;
             _targetPosition = new Vector2f(_tile.Position.X, _tile.Position.Y + Game.TileHeight);
+            _clock = new Clock();
+            _clock.Restart();
         }
 
         // Constructor with target position.
@@ -36,23 +39,29 @@ namespace Match_3
         {
             _tile = targetTile;
             _targetPosition = new Vector2f(position.X, position.Y);
+            _clock = new Clock();
+            _clock.Restart();
         }
 
         //  Interface Drawable implementation.
         public override void Draw(RenderTarget target, RenderStates state)
         {
+            var time = _clock.ElapsedTime.AsSeconds();
             if (_tile.Position.Y != _targetPosition.Y)
             {
                 var dif = _targetPosition.Y-  _tile.Position.Y;
-                _tile.Position = _tile.Position + new Vector2f(0, Math.Sign(dif) * Game.TimeStep);
+                _tile.Position = _tile.Position + new Vector2f(0, Math.Sign(dif) * Game.TimeStep* time);
             }
             if (_tile.Position.X != _targetPosition.X)
             {
                 var dif = _targetPosition.X - _tile.Position.X;
-                _tile.Position = _tile.Position + new Vector2f(Math.Sign(dif) * Game.TimeStep, 0);
+                _tile.Position = _tile.Position + new Vector2f(Math.Sign(dif) * Game.TimeStep* time, 0);
             }
-            if (_tile.Position! == _targetPosition)
+            var errX = Math.Abs(_tile.Position.X - _targetPosition.X);
+            var errY = Math.Abs(_tile.Position.Y - _targetPosition.Y);
+            if (errX < Game.TimeStep*0.1f && errY < Game.TimeStep * 0.1f)
             {
+                _tile.Position = _targetPosition;
                 _isDone = true;
             }
             target.Draw(_tile);
