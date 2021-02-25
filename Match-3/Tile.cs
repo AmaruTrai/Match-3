@@ -29,28 +29,28 @@ namespace Match_3
             int random = new Random().Next(1, 5);
             IntRect rect;
             string name;
-            var width = 220;
-            var height = 220;
+            var width = (int)Game.StepInImage;
+            var height = (int)texture.Size.Y;
             switch (random)
             {
                 case 1:
-                    rect = new IntRect(50, 50, width, height);
+                    rect = new IntRect(0, 0, width, height);
                     name = "Red";
                     break;
                 case 2:
-                    rect = new IntRect(275, 50, width, height);
+                    rect = new IntRect(width, 0, width, height);
                     name = "Purple";
                     break;
                 case 3:
-                    rect = new IntRect(500, 50, width, height);
+                    rect = new IntRect(width*2, 0, width, height);
                     name = "Blue";
                     break;
                 case 4:
-                    rect = new IntRect(725, 50, width, height);
+                    rect = new IntRect(width*3, 0, width, height);
                     name = "Orange";
                     break;
                 default:
-                    rect = new IntRect(50, 340, width, height);
+                    rect = new IntRect(width*4, 0, width, height);
                     name = "Green";
                     break;
             }
@@ -105,7 +105,7 @@ namespace Match_3
 
         public BonusTile(Texture texture, Tile tile, Bonus bonus) : this(tile.Sprite, tile.Name, tile.Line, tile.Column, bonus)
         {
-            var width = 250;
+            var width = (int)Game.StepInImage;
             var height = (int)texture.Size.Y;
             IntRect rect;
             switch (_id)

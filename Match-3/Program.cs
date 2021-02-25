@@ -1,9 +1,6 @@
 ﻿using System;
 using SFML.Graphics;
-using System.Configuration.Assemblies;
-using System.Collections.Specialized;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Xml;
 
 namespace Match_3
 {
@@ -29,9 +26,11 @@ namespace Match_3
         public static uint MapSize;
         public static uint TileWidth;
         public static uint TileHeight;
+        public static uint StepInImage;
         public static string GameName;
         public static float TimeStep;
         public static float GameDuration;
+        
 
         // Static constructor, load files from Resource.
         static Game()
@@ -58,6 +57,7 @@ namespace Match_3
             GameFieldWidth  = Convert.ToUInt32(settings["GameFieldWidth"]);
             GameFieldHeight = Convert.ToUInt32(settings["GameFieldHeight"]);
             MapSize         = Convert.ToUInt32(settings["MapSize"]);
+            StepInImage     = Convert.ToUInt32(settings["StepInImage"]);
             GameName        = Convert.ToString( settings["GameName"]);
             TimeStep        = (float)Convert.ToInt32(settings["TimeStep"]);
             GameDuration    = (float)Convert.ToInt32(settings["GameDuration"]);
