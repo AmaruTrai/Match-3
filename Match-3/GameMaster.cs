@@ -58,6 +58,7 @@ namespace Match_3
             lineVerticalBonusList.Clear();
             lineHorizontalBonusList.Clear();
             GenerateMap();
+            while (UpdateMap(false)) { }
             _score = 0;
         }
 
@@ -197,11 +198,11 @@ namespace Match_3
         public bool UpdateMap(bool isDraw = true)
         {
             bool reply = true;
-            if (!BonusRun())
+            if (!BonusRun(isDraw))
             {
                 if (!Falling(isDraw))
                 {
-                    if (!FindAndDestroy())
+                    if (!FindAndDestroy(isDraw))
                     {
                         GenerateTopLine(isDraw);
                         reply = false;
@@ -245,7 +246,7 @@ namespace Match_3
         }
 
         // The method finds matches and removes them, return true, if remove any match.
-        public bool FindAndDestroy()
+        public bool FindAndDestroy(bool isDraw = true)
         {
             bool reply = false;
             for (int i = 0; i < Game.MapSize; ++i)
@@ -256,12 +257,12 @@ namespace Match_3
                     {
                         NewCheck(_gameMap[i, j]);
                         FindBonus();
-                        if (DeleteTile(listLine))
+                        if (DeleteTile(listLine, isDraw))
                         {
                             reply = true;
                         }
 
-                        if(DeleteTile(listColumn))
+                        if(DeleteTile(listColumn, isDraw))
                         {
                             reply = true;
                         }
@@ -282,7 +283,7 @@ namespace Match_3
 
 
         // Method describing the behavior of activated bonuses.
-        private bool BonusRun()
+        private bool BonusRun(bool isDraw = true)
         {
             bool reply = true;
             if (bonusList.Count > 0)
@@ -291,7 +292,7 @@ namespace Match_3
                 var bonusListForDelete = new List<Bonus>();
                 foreach (Bonus bonus in bonusListCopy)
                 {
-                    if (!bonus.Run())
+                    if (!bonus.Run(isDraw))
                     {
                         bonusListForDelete.Add(bonus);
                     }
@@ -476,7 +477,7 @@ namespace Match_3
         }
 
         // Method removes the list of tiles from the map, calls animation for each
-        private bool DeleteTile(List<List<Tile>> listTile)
+        private bool DeleteTile(List<List<Tile>> listTile, bool isDraw = true)
         {
             bool reply = false;
             foreach (List<Tile> list in listTile)
@@ -493,7 +494,10 @@ namespace Match_3
                             {
                                 bonusList.Add(bonus.Bonus);
                             }
-                            _painter.AddAnimation(new DestroyAnimation(_gameMap[tile.Line, tile.Column]));
+                            if (isDraw)
+                            {
+                                _painter.AddAnimation(new DestroyAnimation(_gameMap[tile.Line, tile.Column]));
+                            }
                             _gameMap[tile.Line, tile.Column] = null;
                             reply = true;
                         }
