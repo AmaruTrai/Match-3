@@ -80,7 +80,7 @@ namespace Match_3
         }
 
         // The method generates new elements on the top line, return true, if create any Tile.
-        private bool GenerateTopLine()
+        private bool GenerateTopLine(bool isDraw = true)
         {
             bool reply = false;
             for (int j = 0; j < Game.MapSize; ++j)
@@ -89,8 +89,15 @@ namespace Match_3
                 {
                     var positionStart = new Vector2f(j * Game.TileWidth, -1 * Game.TileHeight);
                     var positionEnd = new Vector2f(j * Game.TileWidth, 0 * Game.TileHeight);
-                    _gameMap[j, 0] = Tile.CreateRandomTile(Game.Icon, positionStart, j, 0);
-                    _painter.AddAnimation(new MoveAnimation(_gameMap[j, 0], positionEnd));
+                    if (isDraw)
+                    {
+                        _gameMap[j, 0] = Tile.CreateRandomTile(Game.Icon, positionStart, j, 0);
+                        _painter.AddAnimation(new MoveAnimation(_gameMap[j, 0], positionEnd));
+                    }
+                    else
+                    {
+                        _gameMap[j, 0] = Tile.CreateRandomTile(Game.Icon, positionEnd, j, 0);
+                    }
                     reply = true;
                 }
              }
@@ -187,29 +194,29 @@ namespace Match_3
         }
 
         // The main method in which the state of the playing field is updated
-        public bool UpdateMap()
+        public bool UpdateMap(bool isDraw = true)
         {
             bool reply = true;
             if (!BonusRun())
             {
-                if (!Falling())
+                if (!Falling(isDraw))
                 {
                     if (!FindAndDestroy())
                     {
-                        GenerateTopLine();
+                        GenerateTopLine(isDraw);
                         reply = false;
                     }
                 }
                 else
                 {
-                    GenerateTopLine();
+                    GenerateTopLine(isDraw);
                 }
             }
             return reply;
         }
 
         // Method describing falling tiles on the map, return true, if any Tile fall down.
-        private bool Falling()
+        private bool Falling(bool isDraw = true)
         {
             bool reply = false;
             for (int i = 0; i < Game.MapSize; ++i)
@@ -220,10 +227,16 @@ namespace Match_3
                     {
                         reply = true;
                         _LastMovedMap[i, j + 1] = (Tile)_gameMap[i, j].Clone();
+                        if (isDraw)
+                        {
+                            _painter.AddAnimation(new MoveAnimation(_gameMap[i, j]));
+                        }
+                        else
+                        {
+                            _gameMap[i, j].Position = new Vector2f(_gameMap[i, j].Position.X, _gameMap[i, j].Position.Y + Game.TileHeight);
+                        }
+                        _gameMap[i, j].Column = j + 1;
                         _gameMap[i, j + 1] = _gameMap[i, j];
-                        _painter.AddAnimation(new MoveAnimation(_gameMap[i, j + 1]));
-                        _gameMap[i, j + 1].Line = i;
-                        _gameMap[i, j + 1].Column = j + 1;
                         _gameMap[i, j] = null;
                     }
                 }
