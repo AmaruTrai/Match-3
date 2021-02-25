@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using SFML.Graphics;
 using SFML.System;
-
+using System;
 
 namespace Match_3
 {
@@ -11,12 +11,14 @@ namespace Match_3
     {
         protected Tile _tile;
         protected GameMaster _master;
+        protected bool _isDraw;
 
         // Constructor
-        public Bonus(Tile tile, GameMaster master)
+        public Bonus(Tile tile, GameMaster master, bool isDraw = true)
         {
             _tile = (Tile)tile.Clone();
             _master = master;
+            _isDraw = isDraw;
         }
 
         // Update function, returns true until the bonus ends.
@@ -47,7 +49,7 @@ namespace Match_3
         protected List<Tile> _tileList;
 
         // Constructor.
-        public LineBonus(Tile tile, GameMaster master) : base(tile, master)
+        public LineBonus(Tile tile, GameMaster master, bool isDraw = true) : base(tile, master, isDraw)
         {
             _tileList = new List<Tile>();
             IsGo = false;
@@ -83,10 +85,81 @@ namespace Match_3
             return true;
         }
 
+        protected void FirstTileMove(Vector2f targetPosition)
+        {
+            var newTile = (Tile)_tile.Clone();
+            if (_isDraw)
+            {
+                newTile.Position = _tile.Position;
+                var animation = new MoveAnimation(newTile, targetPosition);
+                _master.Painter.AddAnimation(animation);
+            }
+            else
+            {
+                newTile.Position = targetPosition;
+            }
+            var errorPosition = targetPosition - _tile.Position;
+            newTile.Column = newTile.Column + (int)(errorPosition.Y / (float)Game.TileWidth);
+            newTile.Line = newTile.Line + (int)(errorPosition.X / (float)Game.TileHeight);
+            _tileList.Add(newTile);
+        }
+
         // Function describing the movement of the destroyer.
         protected virtual bool MoveTile(Tile tile)
         {
-            return false;
+            bool reply = false;
+            var dif = tile.Position - _tile.Position;
+            UpdateMap(tile);
+            if (dif.X < 0)
+            {
+                if (tile.Line > 0 )
+                {
+                    Move(tile, dif);
+                    reply = true;
+                }
+            }
+            else if (dif.X > 0)
+            {
+                if (tile.Line < Game.MapSize - 1)
+                {
+                    Move(tile, dif);
+                    reply = true;
+                }
+            }
+            else if (dif.Y < 0)
+            {
+                if (tile.Column > 0)
+                {
+                    Move(tile, dif);
+                    reply = true;
+                }
+            }
+            else if (dif.Y > 0)
+            {
+                if (tile.Column < Game.MapSize - 1)
+                {
+                    Move(tile, dif);
+                    reply = true;
+                }
+            }
+
+            return reply;
+        }
+
+        private void Move(Tile tile, Vector2f errorPos)
+        {
+            var position = new Vector2f(tile.Position.X + Math.Sign(errorPos.X) * (float)Game.TileWidth, tile.Position.Y + Math.Sign(errorPos.Y) * (float)Game.TileHeight);
+            if (_isDraw)
+            {
+                var animation = new MoveAnimation(tile, position);
+                _master.Painter.AddAnimation(animation);
+            }
+            else
+            {
+                tile.Position = position;
+            }
+            tile.Line = tile.Line + Math.Sign(errorPos.X);
+            tile.Column = tile.Column + Math.Sign(errorPos.Y);
         }
 
         // Function describing the creation of destroyers.
@@ -115,7 +188,7 @@ namespace Match_3
     public class LineVerticalBonus: LineBonus
     {
         // Constructor.
-        public LineVerticalBonus(Tile tile, GameMaster master) : base(tile, master)
+        public LineVerticalBonus(Tile tile, GameMaster master, bool isDraw = true) : base(tile, master, isDraw)
         {
 
         }
@@ -125,63 +198,16 @@ namespace Match_3
         {
             if (_tile.Column > 0)
             {
-
-                _tileList.Add((Tile)_tile.Clone());
-                var count = _tileList.Count - 1;
-                var position = new Vector2f(_tileList[count].Position.X, _tileList[count].Position.Y - (float)Game.TileHeight);
-                var animation = new MoveAnimation(_tileList[count], position);
-                _master.Painter.AddAnimation(animation);
-                _tileList[count].Column = _tileList[count].Column - 1;
+                var position = new Vector2f(_tile.Position.X, _tile.Position.Y - (float)Game.TileHeight);
+                FirstTileMove(position);
             }
             if (_tile.Column < Game.MapSize - 1)
             {
-                var newTile = (Tile)_tile.Clone();
-                newTile.Position = _tile.Position;
-                var position = new Vector2f(newTile.Position.X, newTile.Position.Y + (float)Game.TileHeight);
-                var animation = new MoveAnimation(newTile, position);
-                _master.Painter.AddAnimation(animation);
-                newTile.Column = newTile.Column + 1;
-                _tileList.Add(newTile);
+                var position = new Vector2f(_tile.Position.X, _tile.Position.Y + (float)Game.TileHeight);
+                FirstTileMove(position);
             }
             _master.DeleteTile(_tile.Line, _tile.Column);
         }
-
-        // Function describing the movement of the destroyer.
-        protected override bool MoveTile(Tile tile)
-        {
-            bool reply = false;
-            var dif = tile.Column -  _tile.Column;
-            UpdateMap(tile);
-
-            if (dif < 0)
-            {
-                if (tile.Column > 0)
-                {
-                    var position = new Vector2f(tile.Position.X, tile.Position.Y - (float)Game.TileHeight);
-                    var animation = new MoveAnimation(tile, position);
-                    _master.Painter.AddAnimation(animation);
-                    tile.Column = tile.Column - 1;
-                    reply = true;
-
-                }
-            }
-            else if (dif > 0)
-            {
-                if (tile.Column < Game.MapSize - 1)
-                {
-
-                    var position = new Vector2f(tile.Position.X, tile.Position.Y + (float)Game.TileHeight);
-                    var animation = new MoveAnimation(tile, position);
-                    _master.Painter.AddAnimation(animation);
-                    tile.Column = tile.Column + 1;
-                    reply = true;
-
-                }
-            }
-            return reply;
-        }
-
-
     }
 
     // Bonus class horizontal line.
@@ -189,7 +215,7 @@ namespace Match_3
     {
 
         // Constructor
-        public LineHorizontalBonus(Tile tile, GameMaster master) : base(tile, master)
+        public LineHorizontalBonus(Tile tile, GameMaster master, bool isDraw = true) : base(tile, master, isDraw)
         {
         }
 
@@ -198,61 +224,16 @@ namespace Match_3
         {
             if (_tile.Line > 0)
             {
-
-                _tileList.Add((Tile)_tile.Clone());
-                var count = _tileList.Count - 1;
-                var position = new Vector2f(_tileList[count].Position.X - (float)Game.TileWidth, _tileList[count].Position.Y);
-                var animation = new MoveAnimation(_tileList[count], position);
-                _master.Painter.AddAnimation(animation);
-                _tileList[count].Line = _tileList[count].Line - 1;
+                var position = new Vector2f(_tile.Position.X - (float)Game.TileWidth, _tile.Position.Y);
+                FirstTileMove(position);
             }
             if (_tile.Line < Game.MapSize - 1)
             {
-                var newTile = (Tile)_tile.Clone();
-                newTile.Position = _tile.Position;
-                var position = new Vector2f(newTile.Position.X + (float)Game.TileWidth, newTile.Position.Y);
-                var animation = new MoveAnimation(newTile, position);
-                _master.Painter.AddAnimation(animation);
-                newTile.Line = newTile.Line + 1;
-                _tileList.Add(newTile);
+                var position = new Vector2f(_tile.Position.X + (float)Game.TileWidth, _tile.Position.Y);
+                FirstTileMove(position);
             }
             _master.DeleteTile(_tile.Line, _tile.Column);
         }
-
-        // Function describing the movement of the destroyer.
-        protected override bool MoveTile(Tile tile)
-        {
-            bool reply = false;
-            var dif = tile.Line - _tile.Line;
-            UpdateMap(tile);
-            if (dif < 0)
-            {
-                if (tile.Line > 0)
-                {
-                    var position = new Vector2f(tile.Position.X - (float)Game.TileWidth, tile.Position.Y);
-                    var animation = new MoveAnimation(tile, position);
-                    _master.Painter.AddAnimation(animation);
-                    tile.Line = tile.Line - 1;
-                    reply = true;
-
-                }
-            }
-            else if (dif > 0)
-            {
-                if (tile.Line < Game.MapSize - 1)
-                {
-
-                    var position = new Vector2f(tile.Position.X + (float)Game.TileWidth, tile.Position.Y);
-                    var animation = new MoveAnimation(tile, position);
-                    _master.Painter.AddAnimation(animation);
-                    tile.Line = tile.Line + 1;
-                    reply = true;
-
-                }
-            }
-            return reply;
-        }
-
     }
 
     // Bonus class bomb.
@@ -262,7 +243,7 @@ namespace Match_3
         private Clock _clock;
 
         // Constructor.
-        public BombBonus(Tile tile, GameMaster master) : base(tile, master)
+        public BombBonus(Tile tile, GameMaster master, bool isDraw = true) : base(tile, master, isDraw)
         {
             _clock = new Clock();
             IsGo = false;
