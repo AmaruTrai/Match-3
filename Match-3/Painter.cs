@@ -164,7 +164,7 @@ namespace Match_3
                 _rTexture.Display();
                 _window.Draw(_renderSprite);
                 _window.Display();
-                Thread.Sleep(5);
+                Thread.Sleep(1);
             }
         }
 
