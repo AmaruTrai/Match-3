@@ -7,6 +7,5 @@
   <StepInImage> 250 </StepInImage>
   <MapSize> 8 </MapSize>
   <GameName> Match-3 </GameName>
-  <TimeStep> 4 </TimeStep>
   <GameDuration> 60 </GameDuration>
 </configuration>

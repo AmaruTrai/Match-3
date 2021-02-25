@@ -59,10 +59,10 @@ namespace Match_3
             MapSize         = Convert.ToUInt32(settings["MapSize"]);
             StepInImage     = Convert.ToUInt32(settings["StepInImage"]);
             GameName        = Convert.ToString( settings["GameName"]);
-            TimeStep        = (float)Convert.ToInt32(settings["TimeStep"]);
             GameDuration    = (float)Convert.ToInt32(settings["GameDuration"]);
             TileWidth       = GameFieldWidth / MapSize;
             TileHeight      = GameFieldHeight / MapSize;
+            TimeStep = (float)TileWidth / 15f;
 
         }
 
