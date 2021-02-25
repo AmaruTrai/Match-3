@@ -31,7 +31,6 @@ namespace Match_3
         private bool AnimationStart;
         private GameState _state;
         private Clock _clock;
-        private bool GameRun;
         private Vector2f _scoredPosition;
 
         // Constructor.
@@ -42,8 +41,6 @@ namespace Match_3
             _clock = new Clock();
             _animationsList = new List<Animation>();
             AnimationStart = false;
-
-            GameRun = false;
 
             // Graphic objects.
             _window = new RenderWindow(new VideoMode(Game.WindowWidth, Game.WindowHeight), Game.GameName);
@@ -116,15 +113,8 @@ namespace Match_3
 
                 string scoreString = null;
                 int time = 0;
-                if (GameRun)
-                {
-                    time = (int)(Game.GameDuration - _clock.ElapsedTime.AsSeconds());
-                    scoreString = "Score: " + _master.Score.ToString();
-                }
-                else
-                {
-                    scoreString = "Score: 0";
-                }
+                time = (int)(Game.GameDuration - _clock.ElapsedTime.AsSeconds());
+                scoreString = "Score: " + _master.Score.ToString();
                 var scoreText = new Text(scoreString, Game.Fonts, 36);
                 scoreText.Position = _scoredPosition;
 
@@ -148,7 +138,7 @@ namespace Match_3
 
                         _rTexture.Draw(scoreText);
                         _rTexture.Draw(text);
-                        if(_clock.ElapsedTime.AsSeconds() < Game.GameDuration || !GameRun)
+                        if(_clock.ElapsedTime.AsSeconds() < Game.GameDuration)
                         {
                             _rTexture.Draw(_master);
                         }
@@ -233,12 +223,6 @@ namespace Match_3
                     var columnDif = secondSeletectedTile.Column - _master.SelectedTile.Column;
                     if ((Math.Abs(lineDif) == 1 && Math.Abs(columnDif) == 0) || (Math.Abs(lineDif) == 0 && Math.Abs(columnDif) == 1))
                     {
-                        if (!GameRun)
-                        {
-                            GameRun = true;
-                            _clock.Restart();
-                            _master.ResetScore();
-                        }
                         _master.SwapAndFind(_master.SelectedTile, secondSeletectedTile);
                         _master.SelectedTile = null;
                     }
@@ -266,7 +250,6 @@ namespace Match_3
                 _state = GameState.GameRun;
                 _window.MouseButtonPressed -= _window_MouseButtonPressedMain;
                 _window.MouseButtonPressed += _window_MouseButtonPressedGame;
-                GameRun = false;
                 _animationsList.Clear();
                 _master.GameStart();
                 _clock.Restart();

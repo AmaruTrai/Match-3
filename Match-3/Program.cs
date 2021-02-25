@@ -64,7 +64,7 @@ namespace Match_3
             GameDuration    = (float)Convert.ToInt32(settings["GameDuration"]);
             TileWidth       = GameFieldWidth / MapSize;
             TileHeight      = GameFieldHeight / MapSize;
-            TimeStep = (float)TileWidth / 10f;
+            TimeStep = (float)TileWidth * 0.2f;
 
         }
 

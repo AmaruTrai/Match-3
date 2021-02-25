@@ -22,7 +22,7 @@ namespace Match_3
         }
 
         // Update function, returns true until the bonus ends.
-        public virtual bool Run()
+        public virtual bool Run(bool isDraw = true)
         {
             return true;
         }
@@ -56,8 +56,9 @@ namespace Match_3
         }
 
         // Update function, returns true until the bonus ends.
-        public override bool Run()
+        public override bool Run(bool isDraw = true)
         {
+            _isDraw = isDraw;
             if (!IsGo)
             {
                 FirstIter();
@@ -284,7 +285,7 @@ namespace Match_3
         }
 
         // Update function, returns true until the bonus ends.
-        public override bool Run()
+        public override bool Run(bool isDraw = true)
         {
             bool reply = true;
             if (!IsGo)
@@ -296,7 +297,10 @@ namespace Match_3
             {
                 if (_clock.ElapsedTime.AsSeconds() < 0.5f)
                 {
-                    _master.Painter.AddAnimation(new BoomAnimation(_tile));
+                    if (isDraw)
+                    {
+                        _master.Painter.AddAnimation(new BoomAnimation(_tile));
+                    }
                     Boom();
                     reply = false;
                 }

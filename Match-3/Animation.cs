@@ -59,7 +59,7 @@ namespace Match_3
             }
             var errX = Math.Abs(_tile.Position.X - _targetPosition.X);
             var errY = Math.Abs(_tile.Position.Y - _targetPosition.Y);
-            if (errX < 1 && errY < 1)
+            if (errX < Game.TimeStep*0.1f && errY < Game.TimeStep * 0.1f)
             {
                 _tile.Position = _targetPosition;
                 _isDone = true;
