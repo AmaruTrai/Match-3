@@ -2,6 +2,7 @@
 using SFML.Graphics;
 using System.IO;
 using SFML.System;
+using System.Collections;
 
 
 namespace Match_3
@@ -10,37 +11,25 @@ namespace Match_3
     public class GameMaster : Drawable
     {
 
-        private int[,] MapCopy;
-
         // Private parameters.
         private List<Bonus> bonusList;
         private Tile[,] _gameMap;
         private Tile[,] _LastMovedMap;
         private Tile _selectedTile;
         private Painter _painter;
-        private List<List<Tile>> listLine;
-        private List<List<Tile>> listColumn;
-        private List<Tile> bombBonusList;
-        private List<Tile> lineVerticalBonusList;
-        private List<Tile> lineHorizontalBonusList;
         private Sprite _frame;
         private double _score;
+        private Analyzer _analyzer;
 
         // Constructor.
         public GameMaster(Painter painter)
         {
             bonusList = new List<Bonus>();
-            listLine = new List<List<Tile>>();
-            listColumn = new List<List<Tile>>();
-            bombBonusList = new List<Tile>();
-            lineVerticalBonusList = new List<Tile>();
-            lineHorizontalBonusList = new List<Tile>();
-
             _painter = painter;
             _painter.SetMaster(this);
             _LastMovedMap = new Tile[Game.MapSize, Game.MapSize];
             _gameMap = new Tile[Game.MapSize, Game.MapSize];
-
+            _analyzer = new Analyzer(_gameMap);
             _frame = new Sprite(Game.Frame);
             _frame.Scale = new Vector2f((float)Game.TileWidth / _frame.Texture.Size.X, (float)Game.TileHeight / _frame.Texture.Size.Y);
             _score = 0;
@@ -52,18 +41,9 @@ namespace Match_3
         {
             _selectedTile = null;
             bonusList.Clear();
-            listLine.Clear();
-            listColumn.Clear();
-            bombBonusList.Clear();
-            lineVerticalBonusList.Clear();
-            lineHorizontalBonusList.Clear();
+            _analyzer.Restart();
             GenerateMap();
             while (UpdateMap(false)) { }
-            _score = 0;
-        }
-
-        public void ResetScore()
-        {
             _score = 0;
         }
 
@@ -174,7 +154,7 @@ namespace Match_3
             {
                 Swap(left, right);
 
-                if (Find())
+                if (_analyzer.Find())
                 {
                     var position = new Vector2f(right.Position.X, right.Position.Y);
                     _LastMovedMap[right.Line, right.Column] = right;
@@ -255,24 +235,17 @@ namespace Match_3
                 {
                     if (_gameMap[i,j] != null)
                     {
-                        NewCheck(_gameMap[i, j]);
-                        FindBonus();
-                        if (DeleteTile(listLine, isDraw))
+                        _analyzer.FindMatchesAtTile(_gameMap[i, j]);
+                        _analyzer.FindBonus(_LastMovedMap);
+                        if (DeleteTile(_analyzer.HorizontalMatches, isDraw))
                         {
                             reply = true;
                         }
 
-                        if(DeleteTile(listColumn, isDraw))
+                        if(DeleteTile(_analyzer.VerticalMatches, isDraw))
                         {
                             reply = true;
                         }
-                        if (_selectedTile != null)
-                        {
-
-                        }
-   
-                        listLine.Clear();
-                        listColumn.Clear();
                     }
                 }
             }
@@ -315,6 +288,9 @@ namespace Match_3
         // Method creates files containing bonuses.
         private void CreateBonusTiles()
         {
+            var lineHorizontalBonusList = _analyzer.LineHorizontalBonusList;
+            var lineVerticalBonusList = _analyzer.LineVerticalBonusList;
+            var bombBonusList = _analyzer.BombBonusList;
             if (lineHorizontalBonusList.Count > 0 || lineVerticalBonusList.Count > 0 || bombBonusList.Count > 0)
             {
                 foreach(Tile tile in lineVerticalBonusList)
@@ -338,143 +314,6 @@ namespace Match_3
             bombBonusList.Clear();
         }
 
-        // Method look for possible occurrences of bonuses.
-        private void FindBonus()
-        {
-            NoIntersectionСheck(listLine, lineHorizontalBonusList);
-            NoIntersectionСheck(listColumn, lineVerticalBonusList);
-            IntersectionСheck();
-            lineHorizontalBonusList = FindCopy(lineHorizontalBonusList);
-            lineVerticalBonusList = FindCopy(lineVerticalBonusList);
-            bombBonusList = FindCopy(bombBonusList);
-        }
-
-        // Method that finds duplicate elements.
-        private List<Tile> FindCopy(List<Tile> list)
-        {
-            var reply = new List<Tile>();
-            foreach (Tile tile in list)
-            {
-                var allCopy = list.FindAll(item => tile == item);
-                reply.Add((Tile)allCopy[0].Clone());
-            }
-            return reply;
-        }
-
-        // Method looks for bonuses without considering intersections
-        private void NoIntersectionСheck(List<List<Tile>> listTile, List<Tile> bonusList )
-        {
-            foreach (List<Tile> list in listTile)
-            {
-                if (list.Count > 3)
-                {
-                    foreach (Tile tile in list)
-                    {
-                        if (_LastMovedMap[tile.Line, tile.Column] != null)
-                        {
-                            if (list.Count == 4)
-                            {
-                                bonusList.Add(_LastMovedMap[tile.Line, tile.Column]);
-                                break;
-                            }
-                            if (list.Count > 4)
-                            {
-                                bombBonusList.Add(_LastMovedMap[tile.Line, tile.Column]);
-                                break;
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-        // Method looks for bonuses with considering intersections
-        private void IntersectionСheck()
-        {
-            foreach (List<Tile> list in listLine)
-            {
-                if (list.Count > 2)
-                {
-                    foreach (Tile tile in list)
-                    {
-                        if (_LastMovedMap[tile.Line, tile.Column] != null)
-                        {
-                            foreach (List<Tile> listC in listColumn)
-                            {
-                                if (listC.Count > 2)
-                                {
-                                    foreach (Tile tileC in listC)
-                                    {
-                                        if (tile == tileC)
-                                        {
-                                            bombBonusList.Add(_gameMap[tile.Line, tile.Column]);
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
-
-        // Method looks for possible matches
-        public bool Find()
-        {
-            bool reply = false;
-            for (int i = 0; i < Game.MapSize; ++i)
-            {
-                for (int j = 0; j < Game.MapSize; ++j)
-                {
-                    if (_gameMap[i, j] != null)
-                    {
-                        NewCheck(_gameMap[i, j]);
-                        foreach (List<Tile> list in listLine)
-                        {
-                            if (list.Count > 2)
-                            {
-                                int num = 0;
-                                foreach (Tile tile in list)
-                                { 
-                                    if (tile != null)
-                                    {
-                                        num++;
-                                    }
-                                }
-                                if (num == list.Count)
-                                {
-                                    reply = true;
-                                }
-                            }
-                        }
-                        foreach (List<Tile> list in listColumn)
-                        {
-                            if (list.Count > 2)
-                            {
-                                int num = 0;
-                                foreach (Tile tile in list)
-                                {
-                                    if (tile != null)
-                                    {
-                                        num++;
-                                    }
-                                }
-                                if (num == list.Count)
-                                {
-                                    reply = true;
-                                }
-                            }
-                        }
-
-                        listLine.Clear();
-                        listColumn.Clear();
-                    }
-                }
-            }
-            return reply;
-        }
 
         // Method removes the list of tiles from the map, calls animation for each
         private bool DeleteTile(List<List<Tile>> listTile, bool isDraw = true)
@@ -525,162 +364,6 @@ namespace Match_3
             return reply;
         }
 
-
-        // A list of methods collectively describing a matching algorithm.
-        private void NewCheck(Tile tile)
-        {
-            MapCopy = new int[Game.MapSize, Game.MapSize];
-            MapCopy[tile.Line, tile.Column] = 1;
-
-            if (CheckLine(tile))
-            {
-                foreach (Tile ftile in listLine[MapCopy[tile.Line, tile.Column]-1])
-                {
-                    if (ftile != null)
-                    {
-                        CheckColumn(ftile);
-                    }
-                }
-            }
-            if (CheckColumn(tile))
-            {
-                foreach (Tile ftile in listColumn[MapCopy[tile.Line, tile.Column] - 1])
-                {
-                    if (ftile != null)
-                    {
-                        CheckLine(ftile);
-                    }
-                }
-            }
-
-
-
-        }
-
-        private bool CheckLine(Tile tile)
-        {
-
-            listLine.Add(new List<Tile>());
-            int count = listLine.Count;
-            listLine[count-1].Add(tile);
-            CheckLeftLine(tile);
-            CheckRightLine(tile);
-            return listLine[count - 1].Count > 2;
-        }
-
-        private void CheckLeftLine(Tile tile)
-        {
-            bool flag = true;
-            int count = listLine.Count;
-            // int count = MapCopy[tile.Line, tile.Column];
-            for (int i = tile.Line - 1; i >= 0 && flag; i--)
-            {
-                if (_gameMap[i, tile.Column] != null)
-                {
-                    if (_gameMap[i, tile.Column].Name == tile.Name)
-                    {
-                        MapCopy[i, tile.Column] = count + 1;
-                        listLine[count - 1].Add((Tile)_gameMap[i, tile.Column]);
-                    }
-                    else
-                    {
-                        flag = false;
-                    }
-                }
-                else
-                {
-                    flag = false;
-                }
-            }
-        }
-
-        private void CheckRightLine(Tile tile)
-        {
-            bool flag = true;
-            int count = listLine.Count;
-            //int count = MapCopy[tile.Line, tile.Column];
-            for (int i = tile.Line + 1; i < Game.MapSize && flag; i++)
-            {
-                if (_gameMap[i, tile.Column] != null)
-                {
-                    if (_gameMap[i, tile.Column].Name == tile.Name)
-                    {
-                        MapCopy[i, tile.Column] = count + 1;
-                        listLine[count - 1].Add((Tile)_gameMap[i, tile.Column]);
-                    }
-                    else
-                    {
-                        flag = false;
-                    }
-                }
-                else
-                {
-                    flag = false;
-                }
-            }
-        }
-     
-        private bool CheckColumn(Tile tile)
-        {
-            listColumn.Add(new List<Tile>());
-            int count = listColumn.Count;
-            listColumn[count - 1].Add(tile);
-            CheckUpColumn(tile);
-            CheckDownColumn(tile);
-            return listColumn[count - 1].Count > 2;
-        }
-
-        private void CheckUpColumn(Tile tile)
-        {
-            bool flag = true;
-            int count = listColumn.Count;
-            //int count = MapCopy[tile.Line, tile.Column];
-            for (int i = tile.Column - 1; i >= 0 && flag; i--)
-            {
-                if (_gameMap[tile.Line, i] != null)
-                {
-                    if (_gameMap[tile.Line, i].Name == tile.Name)
-                    {
-                        MapCopy[tile.Line, i] = count + 1;
-                        listColumn[count - 1].Add((Tile)_gameMap[tile.Line, i]);
-                    }
-                    else
-                    {
-                        flag = false;
-                    }
-                }
-                else
-                {
-                    flag = false;
-                }
-            }
-        }
-
-        private void CheckDownColumn(Tile tile)
-        {
-            bool flag = true;
-            int count = listColumn.Count;
-            //int count = MapCopy[tile.Line, tile.Column];
-            for (int i = tile.Column + 1; i < Game.MapSize && flag; i++)
-            {
-                if (_gameMap[tile.Line, i] != null)
-                {
-                    if (_gameMap[tile.Line, i].Name == tile.Name)
-                    {
-                        MapCopy[tile.Line, i] = count + 1;
-                        listColumn[count - 1].Add((Tile)_gameMap[tile.Line, i]);
-                    }
-                    else
-                    {
-                        flag = false;
-                    }
-                }
-                else
-                {
-                    flag = false;
-                }
-            }
-        }
 
         // Getters and Setters
         public Tile[,] GameMap
