@@ -154,7 +154,7 @@ namespace Match_3
                 _rTexture.Display();
                 _window.Draw(_renderSprite);
                 _window.Display();
-                Thread.Sleep(1);
+                Thread.Sleep(0);
             }
         }
 
@@ -273,6 +273,7 @@ namespace Match_3
             _window.MouseButtonPressed -= _window_MouseButtonPressedGame;
             _window.MouseButtonPressed += _window_MouseButtonPressedEnd;
             _animationsList.Clear();
+            AnimationStart = false;
             _state = GameState.EndGame;
 
         }
