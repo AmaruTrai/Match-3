@@ -202,8 +202,6 @@ namespace Match_3
         private bool _isDone = false;
         private Tile _tile;
         private Clock _clock;
-        private float widthScale = (float)Game.TileWidth / 250f;
-        private float heightScale = (float)Game.TileHeight / 250f;
 
         // Constructor
         public BoomAnimation(Tile tile)
@@ -217,13 +215,20 @@ namespace Match_3
         public override void Draw(RenderTarget target, RenderStates state)
         {
             float time = _clock.ElapsedTime.AsSeconds();
-            if (time < 0.5f)
+            if (time < 0.1f)
             {
-                var timefactor = time * 4f;
-                var widthBias = widthScale + widthScale * timefactor;
-                var heighBias = heightScale + heightScale * timefactor;
-                _tile.Position = new Vector2f(_tile.Position.X - timefactor, _tile.Position.Y - timefactor);
-                _tile.Sprite.Scale = new Vector2f(widthBias, heighBias);
+                var timefactor = time*0.1f;
+                var widthScale = _tile.Sprite.Scale.X +  timefactor;
+                var heightScale = _tile.Sprite.Scale.Y +  timefactor;
+
+                var sizeXPrev = Game.StepInImage * _tile.Sprite.Scale.X;
+                var sizeYPrev = _tile.Sprite.Texture.Size.Y * _tile.Sprite.Scale.Y;
+                var sizeXNext = Game.StepInImage * widthScale;
+                var sizeYNext = _tile.Sprite.Texture.Size.Y * heightScale;
+                var X = _tile.Position.X + (sizeXPrev - sizeXNext)/2;
+                var Y = _tile.Position.Y + (sizeYPrev - sizeYNext)/2;
+                _tile.Position = new Vector2f(X, Y);
+                _tile.Sprite.Scale = new Vector2f(widthScale, heightScale);
                 target.Draw(_tile);
             }
             else
